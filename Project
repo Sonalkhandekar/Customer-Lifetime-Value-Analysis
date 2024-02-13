@@ -1,1 +1,127 @@
+import pandas as pd
+import plotly.graph_objs as go
+import plotly.express as px
+import plotly.io as pio
+pio.templates.default = "plotly_white"
+data = pd.read_csv("customer_acquisition_data.csv")
+print(data.head())
+fig = px.histogram(data, 
+                   x="cost", 
+                   nbins=20, 
+                   title='Distribution of Acquisition Cost')
+fig.show()
+fig = px.histogram(data, 
+                   x="revenue", 
+                   nbins=20, 
+                   title='Distribution of Revenue')
+fig.show()
+# Now let’s compare the cost of acquisition across different channels and identify the most and least profitable channels:
+
+# 1
+cost_by_channel = data.groupby('channel')['cost'].mean().reset_index()
+# 2
+​
+# 3
+fig = px.bar(cost_by_channel, 
+# 4
+             x='channel', 
+# 5
+             y='cost', 
+# 6
+             title='Customer Acquisition Cost by Channel')
+# 7
+fig.show()
+# So paid advertisement is the most expensive channel, and email marketing is the least expensive channel. Now let’s see which channels are most and least effective at converting customers:
+
+1
+conversion_by_channel = data.groupby('channel')['conversion_rate'].mean().reset_index()
+2
+​
+3
+fig = px.bar(conversion_by_channel, x='channel', 
+4
+             y='conversion_rate', 
+5
+             title='Conversion Rate by Channel')
+6
+fig.show()
+# Social media is the most effective channel for converting customers, while paid advertising is the least effective. Now let’s calculate the total revenue by channel and have a look at the most and least profitable channels in terms of generating revenue:
+
+1
+revenue_by_channel = data.groupby('channel')['revenue'].sum().reset_index()
+2
+​
+3
+fig = px.pie(revenue_by_channel, 
+4
+             values='revenue', 
+5
+             names='channel', 
+6
+             title='Total Revenue by Channel', 
+7
+             hole=0.6, color_discrete_sequence=px.colors.qualitative.Pastel)
+8
+​
+9
+fig.show()
+# So email marketing is the most profitable channel in terms of generating revenue. But there’s not a huge difference between the percentages of revenue generation from all the channels to call any channel the least profitable channel.
+
+# Now let’s calculate the return on investment (ROI) for each channel:
+data['roi'] = data['revenue'] / data['cost']
+roi_by_channel = data.groupby('channel')['roi'].mean().reset_index()
+
+fig = px.bar(roi_by_channel, 
+             x='channel', 
+             y='roi', title='Return on Investment (ROI) by Channel')
+fig.show()
+# The ROI from email marketing is way higher than all other channels, while the ROI from paid advertising is the lowest. Now let’s calculate the customer lifetime value from each channel. Based on the data we have, we can use the formula mentioned below to calculate CLTV:
+
+CLTV = (revenue – cost) * conversion_rate / cost
+1
+data['cltv'] = (data['revenue'] - data['cost']) * data['conversion_rate'] / data['cost']
+2
+​
+3
+channel_cltv = data.groupby('channel')['cltv'].mean().reset_index()
+4
+​
+5
+fig = px.bar(channel_cltv, x='channel', y='cltv', color='channel',
+6
+             title='Customer Lifetime Value by Channel')
+7
+​
+8
+fig.update_xaxes(title='Channel')
+9
+fig.update_yaxes(title='CLTV')
+10
+​
+11
+fig.show()
+So the customer lifetime value from Social Media and the referral channels is the highest.
+
+Now let’s compare the CLTV distributions of the social media and referral channels:
+
+1
+subset = data.loc[data['channel'].isin(['social media', 'referral'])]
+2
+​
+3
+fig = px.box(subset, x='channel', y='cltv', title='CLTV Distribution by Channel')
+4
+​
+5
+fig.update_xaxes(title='Channel')
+6
+fig.update_yaxes(title='CLTV')
+7
+fig.update_layout(legend_title='Channel')
+8
+​
+9
+fig.show()
+# There’s not much difference, but the Customer Lifetime Value from the Social Media channel is slightly better than the referral channel.
+
 
